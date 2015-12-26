@@ -160,9 +160,9 @@ EOstring
     user = Figaro.env.transerve_user
     pass = Figaro.env.transerve_pass
     security_answers = {
-      'What was the color of your first car?' => 'red',
-      'What was the name of your first boyfriend?' => 'nate',
-      'What was the first bone you broke?' => 'radius'
+      Figaro.env.transerve_q1 => Figaro.env.transerve_a1,
+      Figaro.env.transerve_q2 => Figaro.env.transerve_a2,
+      Figaro.env.transerve_q3 => Figaro.env.transerve_a3
     }
     agent = Mechanize.new
     url = 'https://www.ucard.chase.com/'
