@@ -122,18 +122,24 @@ EOstring
   get '/wageworks' do
     username = Figaro.env.wageworks_user
     password = Figaro.env.wageworks_pass
-    puts "#{username} #{password}"
     url = 'https://participant.wageworks.com/'
+    login_post_path = 'Login/SignOn'
     session = Mechanize.new
     session.user_agent_alias = 'Mac Safari'
-    token = session.get(url).parser.xpath("//input[@name='__VIEWSTATE']")[0]['value']
+    homepage = session.get(url).parser
+    form_args = {}
+    tokens = %w(VIEWSTATE VIEWSTATEGENERATOR EVENTVALIDATION VIEWSTATEENCRYPTED PREVIOUSPAGE).map do |t|
+      form_args["__#{t}"] =
+        homepage.xpath("//input[@name='__#{t}']")[0]['value']
+    end
+    form_args.merge!({
+        'txtUserName' => username,
+        'txtPassword' => password,
+        '__EVENTTARGET' => 'btnLinkbutton'
+      })
+    main_screen = session.post("#{url}/#{login_post_path}", form_args)
     commuter_card_amount =
-      session.post('https://participant.wageworks.com/Account/LoginProcess.aspx',
-      'txtUserName' => username,
-      'txtPassword' => password,
-      'hidPageMode' => 'Login',
-      '__VIEWSTATE' => token).
-      search('span#bodySection_ctl01_transitCardBalanceLabel').
+      main_screen.search('span#bodySection_ctl01_transitCardBalanceLabel').
       text
     html { commuter_card_amount }
   end
